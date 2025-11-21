@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+   <!-- Stops the map from breaking -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Loads leaflet from unpkg-->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="js/school_map.js"></script>
+  <script src="js/priority_queue.js"></script>
+  <script src="js/tron.js"></script>
+</head>
+
+<body>
+  <!-- Really basic map -->
+  <div id="map" style="height: 500px;"></div>
+
+  <!-- Needs to come after the div container so that JS can find it-->
+  <script src="js/mapSetup.js"></script>
+  <script src="js/geo_location_utils.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/show_starting_dot.js"></script>
+  <script src="js/live_instructions.js"></script>
+</body>
+
+</html>
