@@ -35,19 +35,20 @@ function get_distance(coord1, coord2) {
 function get_nearest_coord(pos, coords) {
     // coords is an array of long lat pairs
     // pos is a long, lat pair
-    // returns the closest coord pair/farthest along the path
+    // returns the closest coord pair and picks out of the closest 2 the one the farthest along the path (largest index)
 
 
     let cur_min = Infinity;
     let sec_min_index = null;
     let cur_min_index;
+    let pos_cart = sphere_to_cart(pos)
+
 
 
     for (let i = 0; i < coords.length; i++) {
-        let coord = [coords[i].lng, coords[i].lat];
-        console.log("inspecting:", coord);
+        let coord = sphere_to_cart([coords[i].lng, coords[i].lat]);
 
-        let cur_dist = get_distance(pos, coord);
+        let cur_dist = get_distance(pos_cart, coord);
 
         if (cur_dist < cur_min) {
             if (cur_min != Infinity)
