@@ -60,47 +60,17 @@ function update_route(pos) {
     __tronLayer.setLatLngs(modified);
 }
 
-function make_vec(coord1, coord2) {
-    // makes a vec out of a pair or coordinates
-    return [coord2[0] - coord1[0], coord2[1] - coord1[1]]
-}
-
-function dot_prod(v1, v2) {
-    // calculates dot product between vectors
-    return v1[0] * v2[0] + v1[1] * v2[1];
-}
-
-function cross_product(v1, v2){
-    // cross product of two 2d vectors
-
-    return [0, 0, v1[0] * v2[1] - v1[1] * v2[0]]
-}
-function direction(v1, v2) {
-    // calculate angle in degrees between two vectors
-    let k = cross_product(v1, v2)[2];
-
-    let direction;
-    if(Math.abs(k) < 1){
-        direction = "Straight";
-    }else if(k >= 1){
-        direction = "Left";
-    }else if(k <= -1){
-        direction = "Right";
-    }
-
-    return direction;
-}
-
-function check_arrays_equal(arr1, arr2){
-    if(arr1.length != arr2.length)
+function check_arrays_equal(arr1, arr2) {
+    if (arr1.length != arr2.length)
         return false;
 
-    for(let i = 0; i < arr1.length; i++){
-        if(arr1[i] != arr2[i])
+    for (let i = 0; i < arr1.length; i++) {
+        if (arr1[i] != arr2[i])
             return false;
     }
     return true;
 }
+
 function get_next_instruction(pos) {
 
     // returns a string representing the next instruction
@@ -109,7 +79,7 @@ function get_next_instruction(pos) {
     let final = full_route[full_route.length - 1] // get final point
     let final_coords = sphere_to_cart([final.lng, final.lat]);
     let diff = get_distance(cur_coords, final_coords);
- 
+
     if (diff < ARRIVED_DIST)
         return "Arrived";
 
@@ -117,7 +87,7 @@ function get_next_instruction(pos) {
     let nearest = full_route[index];
 
 
-    index = check_arrays_equal([nearest.lng, nearest.lat],[pos[0], pos[1]]) ? index + 1 : index; // if we happen to be at the current line point look ahead to the next one
+    index = check_arrays_equal([nearest.lng, nearest.lat], [pos[0], pos[1]]) ? index + 1 : index; // if we happen to be at the current line point look ahead to the next one
     nearest = full_route[index];
     nearest = [nearest.lng, nearest.lat];
     nearest = sphere_to_cart(nearest);
@@ -131,8 +101,10 @@ function get_next_instruction(pos) {
 function update_instruction(pos) {
     // updates the instructions on screen
     let nxt_instruc = get_next_instruction(pos);
+    let msg = new SpeechSynthesisUtterance(nxt_instruc);
+    window.speechSynthesis.speak(msg);
 
-    document.getElementById("instruc").innerText = "Instruction:" + nxt_instruc;
+    document.getElementById("instruc").innerText = "Instruction: " + nxt_instruc;
 
     if (nxt_instruc == "Arrived")
         return true;
@@ -143,10 +115,6 @@ function update_instruction(pos) {
 
 // longitudes are usually around -76
 function map_refresh(e) {
-    //console.log("Lat", e.latlng.lat, "Lng", e.latlng.lng);
-    console.log("All parts:", full_route);
-
-
     let pos = [e.latlng.lng, e.latlng.lat]; // get current position
 
     // TESTING
@@ -155,32 +123,35 @@ function map_refresh(e) {
 
     prev_coords = cur_coords;
     cur_coords = sphere_to_cart(pos);
-    
-    /*
-    pos = [-76.53810024261476 + .4 , 39.09237410132065 + .4]*/
 
     if (route.length > 0) {
         update_route(pos, route);
-    } 
+    }
+ 
     if (prev_coords && cur_coords && routeStarted && !check_arrays_equal(prev_coords, cur_coords)) {
+        console.log("Updating");
         let finished = update_instruction(pos)
 
-        route = finished ? [] : route;
-        routeStarted = !finished;
+        if (finished) {
+            route = [];
+            routeStarted = false;
+            full_route = null;
+        }
+
     }
 
 
 }
-// cur pos ~ 1763757175911
-// coords: [-76.53791785240175, 39.0926364005514]
 
-let cur = "1763757175911";
-let target = "1763757191244"; // up on shakespeare
-route = A_star(cur, target);
-tron_line(route);
+function generate_route(n1, n2) {
+    // n1 and n2 are string node ids
+    // calculates and draws the route and gets it ready for live instruction
+    route = A_star(n1, n2);
+    tron_line(route);
+    full_route = __tronLayer.getLatLngs();
+    routeStarted = true; //set this to true when the user hits start route for now I'll leave it to set here for testing
+}
 
-
-full_route = __tronLayer.getLatLngs(); // this will be set right after generation
-routeStarted = true; // same with this
-console.log(direction([1,0], [1,1]));
+generate_route("364174829", "9450524590");
+// refreshes the map every time the user's location changes
 nav_map.on("locationfound", map_refresh)
