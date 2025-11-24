@@ -1,4 +1,4 @@
-const STRAIGHT_TOLERANCE = 5; // all cross products in the range (-STRAIGHT_TOLERANCE, STRAIGHT_TOLERANCE)
+const STRAIGHT_TOLERANCE = 20; // all cross products in the range (-STRAIGHT_TOLERANCE, STRAIGHT_TOLERANCE)
                               // and if the cross product is greater than STRAIGHT_TOLERANCE then we turn left
                               // and if the cross product is less than -STRAIGHT_TOLERANCE then we turn right
                               // increase for more stability but possibly less responsiveness
@@ -19,7 +19,7 @@ function cross_product(v1, v2){
     return [0, 0, v1[0] * v2[1] - v1[1] * v2[0]]
 }
 function direction(v1, v2) {
-    // calculate angle in degrees between two vectors
+    // indicate direction using right hand rule
     let k = cross_product(v1, v2)[2];
 
     let direction;
