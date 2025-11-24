@@ -1,4 +1,4 @@
-const STRAIGHT_TOLERANCE = 1; // all cross products in the range (-STRAIGHT_TOLERANCE, STRAIGHT_TOLERANCE)
+const STRAIGHT_TOLERANCE = 5; // all cross products in the range (-STRAIGHT_TOLERANCE, STRAIGHT_TOLERANCE)
                               // and if the cross product is greater than STRAIGHT_TOLERANCE then we turn left
                               // and if the cross product is less than -STRAIGHT_TOLERANCE then we turn right
                               // increase for more stability but possibly less responsiveness
