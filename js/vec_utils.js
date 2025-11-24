@@ -23,11 +23,11 @@ function direction(v1, v2) {
     let k = cross_product(v1, v2)[2];
 
     let direction;
-    if(Math.abs(k) < 1){
+    if(Math.abs(k) < STRAIGHT_TOLERANCE){
         direction = "Straight";
-    }else if(k >= 1){
+    }else if(k >= STRAIGHT_TOLERANCE){
         direction = "Left";
-    }else if(k <= -1){
+    }else if(k <= -STRAIGHT_TOLERANCE){
         direction = "Right";
     }
 
