@@ -2,7 +2,9 @@ var routeStarted = true;
 var route = [];
 var full_route;
 var cur_coords, prev_coords = null;
+let route_as_lngs = null;
 const ARRIVED_DIST = 3; // meters away from ending node that we say the user has arrived
+const UPDATE_POS_DIST = 5 // only update tron line if distance is gtr than this (meters)
 
 /* The main function to call to begin live navigation
 when started: 
@@ -71,8 +73,8 @@ function check_arrays_equal(arr1, arr2) {
     return true;
 }
 
-function get_next_instruction(pos) {
-
+/*function get_next_instruction(pos) {
+    // some times this gets hooked on points behind the user -- fix
     // returns a string representing the next instruction
     let v1 = make_vec(prev_coords, cur_coords);
 
@@ -96,11 +98,12 @@ function get_next_instruction(pos) {
 
     return direction(v1, v2);
 
-}
+}*/
 
 function update_instruction(pos) {
+    // need to fix
     // updates the instructions on screen
-    let nxt_instruc = get_next_instruction(pos);
+    let nxt_instruc = get_next_instruc(pos, route_as_lngs);
     let msg = new SpeechSynthesisUtterance(nxt_instruc);
     window.speechSynthesis.speak(msg);
 
@@ -110,7 +113,6 @@ function update_instruction(pos) {
         return true;
 
     return false;
-    // html update logic
 }
 
 // longitudes are usually around -76
@@ -124,12 +126,14 @@ function map_refresh(e) {
     prev_coords = cur_coords;
     cur_coords = sphere_to_cart(pos);
 
+
+    //let dist_v = [cur_coords[0] - prev_coords[0], cur_coords[1] - prev_coords[1]];
+
     if (route.length > 0) {
         update_route(pos, route);
     }
  
-    if (prev_coords && cur_coords && routeStarted && !check_arrays_equal(prev_coords, cur_coords)) {
-        console.log("Updating");
+    if (routeStarted) {
         let finished = update_instruction(pos)
 
         if (finished) {
@@ -149,9 +153,20 @@ function generate_route(n1, n2) {
     route = A_star(n1, n2);
     tron_line(route);
     full_route = __tronLayer.getLatLngs();
-    routeStarted = true; //set this to true when the user hits start route for now I'll leave it to set here for testing
+    route_as_lngs = convert_polypath_to_long_lats(full_route);
 }
 
-generate_route("364174829", "9450524590");
+function temp_start(){
+    routeStarted = true;
+    //document.getElementById('instruc').textContent = ""
+}
+
 // refreshes the map every time the user's location changes
 nav_map.on("locationfound", map_refresh)
+
+/*
+TODO: 
+    - Reduce noise in tron line updates
+    - If user gets too far from line recalculate route
+    - Test and refine live directions
+*/
