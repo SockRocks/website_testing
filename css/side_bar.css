@@ -154,3 +154,12 @@
         z-index: 1000;
         /* sits above other elements */
     }
+
+    @media (max-width: 600px) {
+        .overlay {
+            bottom: 80px;
+            /* push it higher up */
+            right: 10px;
+            /* optional: adjust horizontal spacing */
+        }
+    }
