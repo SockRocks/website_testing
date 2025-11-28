@@ -234,15 +234,15 @@ function swap(arr) {
 //let walker = null;
 // longitudes are usually around -76
 function map_refresh(e) {
-    //let pos = null;
-    let pos = [e.latlng.lng, e.latlng.lat]; // get current position
-    //pos = swap([39.09277521369851, -76.54027660679532]);
-    /*var circleMarker = L.circleMarker(swap(pos), {
+    let pos = null;
+    //let pos = [e.latlng.lng, e.latlng.lat]; // get current position
+    pos = swap([39.092514384041394, -76.53804516745649]);
+    var circleMarker = L.circleMarker(swap(pos), {
         radius: 10, // Radius in pixels
         color: 'blue', // Border color
         fillColor: 'red', // Fill color
         fillOpacity: 0.5 // Fill opacity
-    }).addTo(nav_map);*/
+    }).addTo(nav_map);
 
 
 
@@ -278,9 +278,6 @@ function map_refresh(e) {
 function generate_route(n) {
     // n is the destination node id
     // calculates and draws the route and gets it ready for live instruction
-    routeStarted = false;
-    console.log("Clicked!!!");
-    console.log("id1", closest_id, school_map.get(closest_id));
     var circleMarker = L.circleMarker(swap(school_map.get(closest_id).coords), {
         radius: 10, // Radius in pixels
         color: 'blue', // Border color
@@ -288,7 +285,6 @@ function generate_route(n) {
         fillOpacity: 0.5 // Fill opacity
     }).addTo(nav_map);
     route = A_star(closest_id, n);
-    console.log("Route", route);
     tron_line(route);
     full_route = __tronLayer.getLatLngs();
     route_as_lngs = convert_polypath_to_long_lats(full_route);
@@ -296,6 +292,7 @@ function generate_route(n) {
 
 function start_route() {
     routeStarted = true;
+    console.log("New status", routeStarted);
     let ins_over = document.getElementById("ins");
     ins_over.style.display = 'block';
     //walker = simulateWalker(route, 1.4); // ~1.4 m/s (average walking speed)
@@ -303,8 +300,8 @@ function start_route() {
 }
 
 // refreshes the map every time the user's location changes
-//setInterval(map_refresh, 10);
-nav_map.on("locationfound", map_refresh)
+setInterval(map_refresh, 10);
+//nav_map.on("locationfound", map_refresh)
 //setInterval(map_refresh, 15);
 /*
 TODO: 
