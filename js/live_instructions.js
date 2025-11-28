@@ -157,7 +157,7 @@ function update_route(pos) {
     let newPt = { lat: pos[1], lng: pos[0] };
     modified.unshift(newPt);
     __tronLayer.setLatLngs(modified);
-    
+
     ///
     /*let nearest = get_nearest_coord(pos, full_route);
     let modified = full_route.slice(nearest, full_route.length);
@@ -220,7 +220,7 @@ function update_instruction(pos) {
     let msg = new SpeechSynthesisUtterance(nxt_instruc);
     window.speechSynthesis.speak(msg);
 
-    document.getElementById("instruc").innerText = "Instruction: " + nxt_instruc;
+    document.getElementById("instruc").textContent = "Instruction: " + nxt_instruc;
 
     if (nxt_instruc == "Arrived")
         return true;
@@ -275,18 +275,29 @@ function map_refresh(e) {
 
 }
 
-function generate_route(n1, n2) {
-    // n1 and n2 are string node ids
+function generate_route(n) {
+    // n is the destination node id
     // calculates and draws the route and gets it ready for live instruction
-    route = A_star(n1, n2);
+    routeStarted = false;
+    console.log("Clicked!!!");
+    console.log("id1", closest_id, school_map.get(closest_id));
+    var circleMarker = L.circleMarker(swap(school_map.get(closest_id).coords), {
+        radius: 10, // Radius in pixels
+        color: 'blue', // Border color
+        fillColor: 'red', // Fill color
+        fillOpacity: 0.5 // Fill opacity
+    }).addTo(nav_map);
+    route = A_star(closest_id, n);
+    console.log("Route", route);
     tron_line(route);
     full_route = __tronLayer.getLatLngs();
     route_as_lngs = convert_polypath_to_long_lats(full_route);
 }
 
-function temp_start() {
+function start_route() {
     routeStarted = true;
-    console.log("Route started");
+    let ins_over = document.getElementById("ins");
+    ins_over.style.display = 'block';
     //walker = simulateWalker(route, 1.4); // ~1.4 m/s (average walking speed)
     //document.getElementById('instruc').textContent = ""
 }
