@@ -1,7 +1,7 @@
 // both are in meters
 const REDIRECT_CUTOFF = 5; // smallest distance from route we should tell the user to return to the route
 const REROUTE_CUTOFF = 8; // largest distance from route allowed before we reroute
-const NEXT_INSTRUC_DIST = 3; // distance from next bend in path to update instructions
+const NEXT_INSTRUC_DIST = 15; // distance from next bend in path to update instructions
 
 function get_next_instruc(pos, route) {
     // route is the route converted to individual longs and lat pairs
@@ -12,15 +12,18 @@ function get_next_instruc(pos, route) {
     // going to need funciton to convert polyline with lng and lat attributes into swapped arrays
     let pts = get_nearest_coord_pair(pos, route);
     pos = sphere_to_cart(pos);
+
     let v1 = null; // vector user is traveling along
     let v2 = null; // next vector the user will have to travel along
 
-    let d = calculate_distance(pos, sphere_to_cart(route[pts]));
+    /*let d = calculate_distance(pos, sphere_to_cart(route[pts]));
+    d = get_dist_from_line()
+    console.log("Distance", d);
     if (d > REDIRECT_CUTOFF && d < REROUTE_CUTOFF) {
         return "Turn around";
     } else if (d >= REROUTE_CUTOFF) {
         return "Rerouting";
-    }
+    }*/
 
 
     if (pts == route.length - 1 && calculate_distance(pos, sphere_to_cart(route[pts])) <= ARRIVED_DIST) {
@@ -52,6 +55,9 @@ function get_next_instruc(pos, route) {
             v1 = make_vec(p1, p);
             v2 = make_vec(p, p2);
 
+            if(calculate_distance(pos, p) >= calculate_distance(p1, p))
+                return "Return to the route";
+
             if (calculate_distance(pos, p) > NEXT_INSTRUC_DIST)
                 return "Straight";
         } else {
@@ -64,8 +70,9 @@ function get_next_instruc(pos, route) {
             if (route.length < 3) {
                 return "Straight";
             }
-
-            if (calculate_distance(pos, sphere_to_cart(route[pts + 2])) > NEXT_INSTRUC_DIST)
+            if (calculate_distance(pos, p2) >= calculate_distance(p, p2))
+                return "Return to the route";
+            if (calculate_distance(pos, sphere_to_cart(route[pts + 1])) > NEXT_INSTRUC_DIST)
                 return "Straight";
             v2 = make_vec(p2, sphere_to_cart(route[pts + 2]));
         }

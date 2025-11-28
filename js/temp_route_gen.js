@@ -2,8 +2,6 @@ function route_gen(){
     let start = document.getElementById("starts").value;
     let end = document.getElementById("destinations").value;
     generate_route(start, end);
-    console.log("Start:", start);
-    console.log("End:", end);
 
 }
 
@@ -16,7 +14,6 @@ for(const key of school_map.keys()){
     option2.value = key;
     option.textContent = key;
     option2.textContent = key;
-    console.log("Nodes", key);
     choose_end.appendChild(option);
     choose_start.appendChild(option2);
 }

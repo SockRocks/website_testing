@@ -1,10 +1,11 @@
-var routeStarted = true;
+var routeStarted = false;
 var route = [];
 var full_route;
 var cur_coords, prev_coords = null;
 let route_as_lngs = null;
-const ARRIVED_DIST = 3; // meters away from ending node that we say the user has arrived
+const ARRIVED_DIST = 10; // meters away from ending node that we say the user has arrived
 const UPDATE_POS_DIST = 5 // only update tron line if distance is gtr than this (meters)
+
 
 /* The main function to call to begin live navigation
 when started: 
@@ -47,6 +48,97 @@ if (route_started){
     Narrate instructions
 }
 */
+function get_next_pt(pos, route) {
+    // route is the route converted to individual longs and lat pairs
+    // pos is a long lat pair representing user position
+    // assume position is relatively close to tron line
+    // assumes they have not arrived
+
+    // going to need funciton to convert polyline with lng and lat attributes into swapped arrays
+    let pts = get_nearest_coord_pair(pos, route);
+    //console.log("FIrst", pts);
+    pos = sphere_to_cart(pos);
+
+    let v1 = null; // vector user is traveling along
+    let v2 = null; // next vector the user will have to travel along
+
+    /*let d = calculate_distance(pos, sphere_to_cart(route[pts]));
+    d = get_dist_from_line()
+    console.log("Distance", d);
+    if (d > REDIRECT_CUTOFF && d < REROUTE_CUTOFF) {
+        return "Turn around";
+    } else if (d >= REROUTE_CUTOFF) {
+        return "Rerouting";
+    }*/
+
+
+    if (pts == route.length - 1 && calculate_distance(pos, sphere_to_cart(route[pts])) <= ARRIVED_DIST) {
+        //routeStarted = false;
+        return -1;
+    } else if (pts == route.length - 1) {
+        return route.length - 1;
+    } else if (pts == 0) {
+        if (route.length < 3) {
+            return 1; // only 2 pts return 2nd
+        }
+        let p0 = sphere_to_cart(route[0]);
+        let p1 = sphere_to_cart(route[1]);
+        let p2 = sphere_to_cart(route[2]);
+        v1 = [p1[0] - p0[0], p1[1] - p0[1]];
+        v2 = [p2[0] - p1[0], p2[1] - p1[1]];
+
+        if (calculate_distance(pos, p1) > UPDATE_POS_DIST)
+            return -1;
+
+        return 1;
+    } else {
+        //console.log("Correct");
+        let p1 = sphere_to_cart(route[pts - 1]);
+        let p2 = sphere_to_cart(route[pts + 1]);
+        let p = sphere_to_cart(route[pts]);
+
+        let d1 = get_dist_from_line(p1, p, pos);
+        let d2 = get_dist_from_line(p, p2, pos);
+        //console.log("Dist 1", d1);
+        //console.log("Dist 2", d2);
+
+        if (d1 <= d2) {
+            //console.log("first line");
+            v1 = make_vec(p1, p);
+            v2 = make_vec(p, p2);
+
+            if (calculate_distance(pos, p) > calculate_distance(p1, p))
+                return -2; // return to line warning
+
+            //console.log("Dist bad", calculate_distance(pos, p));
+            /*if (calculate_distance(pos, p) > UPDATE_POS_DIST){
+                console.log("GOin g");
+                return -1;
+            }*/
+
+            return pts;
+        } else {
+            if (pts + 1 == route.length - 1) {
+                return route.length - 1;
+            }
+
+            v1 = make_vec(p, p2);
+
+            if (route.length < 3) {
+                return 1;
+            }
+            //console.log("Second line");
+            if (calculate_distance(pos, p2) > calculate_distance(p, p2))
+                return -2;
+            if (calculate_distance(pos, sphere_to_cart(route[pts + 1])) > UPDATE_POS_DIST)
+                return -1;
+            v2 = make_vec(p2, sphere_to_cart(route[pts + 2]));
+
+            return pts + 1;
+        }
+    }
+
+}
 
 function update_route(pos) {
     // takes position as an array [long, lat]
@@ -55,11 +147,23 @@ function update_route(pos) {
     // find top 2 closest coords
     // return the one with the higher index
     // draw a line from the current coords to the returned coord
-    let nearest = get_nearest_coord(pos, full_route);
-    let modified = full_route.slice(nearest, full_route.length);
+
+    let nxt = get_next_pt(pos, route_as_lngs);
+    console.log("Next point is", nxt);
+    if (nxt < 0)
+        return;
+
+    let modified = full_route.slice(nxt, full_route.length);
     let newPt = { lat: pos[1], lng: pos[0] };
     modified.unshift(newPt);
     __tronLayer.setLatLngs(modified);
+    
+    ///
+    /*let nearest = get_nearest_coord(pos, full_route);
+    let modified = full_route.slice(nearest, full_route.length);
+    let newPt = { lat: pos[1], lng: pos[0] };
+    modified.unshift(newPt);
+    __tronLayer.setLatLngs(modified);*/
 }
 
 function check_arrays_equal(arr1, arr2) {
@@ -100,10 +204,19 @@ function check_arrays_equal(arr1, arr2) {
 
 }*/
 
+function cartToLngLat([x, y]) {
+    const R = 6378137; // Earth radius in meters (WGS84)
+    const lng = (x / R) * (180 / Math.PI);
+    const lat = (Math.atan(Math.exp(y / R)) * 2 - Math.PI / 2) * (180 / Math.PI);
+    return [lng, lat];
+}
+
+
 function update_instruction(pos) {
     // need to fix
     // updates the instructions on screen
     let nxt_instruc = get_next_instruc(pos, route_as_lngs);
+    console.log("The next instruc", nxt_instruc);
     let msg = new SpeechSynthesisUtterance(nxt_instruc);
     window.speechSynthesis.speak(msg);
 
@@ -115,9 +228,23 @@ function update_instruction(pos) {
     return false;
 }
 
+function swap(arr) {
+    return [arr[1], arr[0]];
+}
+//let walker = null;
 // longitudes are usually around -76
 function map_refresh(e) {
+    //let pos = null;
     let pos = [e.latlng.lng, e.latlng.lat]; // get current position
+    //pos = swap([39.09277521369851, -76.54027660679532]);
+    /*var circleMarker = L.circleMarker(swap(pos), {
+        radius: 10, // Radius in pixels
+        color: 'blue', // Border color
+        fillColor: 'red', // Fill color
+        fillOpacity: 0.5 // Fill opacity
+    }).addTo(nav_map);*/
+
+
 
     // TESTING
     //pos = [full_route[6].lng, full_route[6].lat];
@@ -127,13 +254,14 @@ function map_refresh(e) {
     cur_coords = sphere_to_cart(pos);
 
 
-    //let dist_v = [cur_coords[0] - prev_coords[0], cur_coords[1] - prev_coords[1]];
 
+    //let dist_v = [cur_coords[0] - prev_coords[0], cur_coords[1] - prev_coords[1]];
     if (route.length > 0) {
         update_route(pos, route);
     }
- 
+
     if (routeStarted) {
+        console.log("Checking if");
         let finished = update_instruction(pos)
 
         if (finished) {
@@ -156,14 +284,17 @@ function generate_route(n1, n2) {
     route_as_lngs = convert_polypath_to_long_lats(full_route);
 }
 
-function temp_start(){
+function temp_start() {
     routeStarted = true;
+    console.log("Route started");
+    //walker = simulateWalker(route, 1.4); // ~1.4 m/s (average walking speed)
     //document.getElementById('instruc').textContent = ""
 }
 
 // refreshes the map every time the user's location changes
+//setInterval(map_refresh, 10);
 nav_map.on("locationfound", map_refresh)
-
+//setInterval(map_refresh, 15);
 /*
 TODO: 
     - Reduce noise in tron line updates
