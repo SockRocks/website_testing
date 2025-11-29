@@ -61,6 +61,8 @@
         transition: left 0.3s;
         z-index: 1100;
         /* above sidebar */
+        min-width: 44px;
+        min-height: 44px;
     }
 
 
@@ -108,7 +110,7 @@
         height: 50px;
         width: 60px;
         cursor: pointer;
-        margin-left: 90px;
+        margin-left: 40px;
         /* pushes it away from the text */
         margin-right: 10px;
         /* adds extra space from the container edge */
@@ -155,11 +157,18 @@
         /* sits above other elements */
     }
 
+    /*
     @media (max-width: 600px) {
         .overlay {
             bottom: 80px;
-            /* push it higher up */
             right: 10px;
-            /* optional: adjust horizontal spacing */
+        }
+    }*/
+
+    @media (max-width: 600px) {
+        .overlay-button {
+            font-size: 1rem;
+            /* larger text */
+            padding: 14px 20px;
         }
     }
