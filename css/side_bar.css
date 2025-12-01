@@ -76,7 +76,7 @@
         padding: 8px;
         border: 1px solid #000000;
         flex: 1;
-        width: 115%;
+        width: 100%;
 
         /* optional styling */
     }
@@ -113,7 +113,7 @@
         height: 50px;
         width: 60px;
         cursor: pointer;
-        margin-left: 40px;
+        margin-left: 20px;
         /* pushes it away from the text */
         margin-right: 10px;
         /* adds extra space from the container edge */
